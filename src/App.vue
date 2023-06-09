@@ -94,15 +94,35 @@ function drawInCanvas() {
     const w = width.value
 
     let increment = h / nbWaves
+    let amplitude = { l: 2, r: 3 }
+    let lift = { l: 0, r: 0 } // 0 is default, h/2 is big lift
+    let flatness = { l: 1, r: 1 } // 1 is very WoW, w is very flat
+
+    let wavesHeight = 0 // 0 is equal, -50 is unequal
+
     currFlagColours.value.forEach((c, index) => {
-      let pos = increment * (index + 1) + rand(-50, 0)
+      let pos = increment * (index) + rand(wavesHeight, 0)
       ctx.fillStyle = c.hexCode;
 
+      let from = { x: 0, y: pos-lift.l }
+      let to = { x: w, y: pos-lift.r }
+
+      let inflPoint1 = { x: 0 + (w / flatness.l), y: pos - rand(0, h/amplitude.l)-lift.l }
+      let inflPoint2 = { x: w - (w / flatness.r), y: pos - rand(0, h/amplitude.r)-lift.r }
+
       ctx.beginPath();
-      ctx.moveTo(0, pos);
-      ctx.bezierCurveTo(0 + (w / rand(2, 15)), pos - rand(20, h/2), w - (w / rand(2, 15)), pos - rand(20, h/2), w, pos)
+      ctx.moveTo(from.x, from.y);
+      ctx.bezierCurveTo(inflPoint1.x, inflPoint1.y, inflPoint2.x, inflPoint2.y , to.x, to.y)
       ctx.fill();
-      ctx.fillRect(0, pos - 1, w, h - (h / pos) + 1);
+      /* fillPoly */
+      ctx.beginPath();
+      ctx.moveTo(from.x, from.y-1);
+      ctx.lineTo(0 + w, to.y-1);
+      ctx.lineTo(w, h - (h / pos) + 1);
+      ctx.lineTo(0, h - (h / pos) + 1);
+      ctx.closePath();
+      ctx.fill();
+      //ctx.fillRect(0, pos - 1, w, h - (h / pos) + 1);
       if (index === 0) {
         ctx.fillRect(0, 0, w, h);
       }
@@ -183,7 +203,7 @@ canvas {
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.2);
 
   max-width: 50vw;
-  max-height: 50vh;
+  max-height: 90vh;
 }
 
 section {
