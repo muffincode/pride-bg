@@ -66,18 +66,32 @@ function rand(min, max) { // min and max included
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
+const height = ref(851)
+const width = ref(393)
+
+function switchRes() {
+  let t = height.value
+  height.value = width.value
+  width.value = t
+}
+
 function drawInCanvas() {
   const canvas = document.getElementById('canvas');
 
-  const h = 851
-  const w = 393
+  // if (width.value > window.innerWidth) {
+  //   canvas.style.transform = "scale(0.5)"
+  // }
+
   const margin = 100
   const nbWaves = currFlagColours.value.length
 
   if (canvas.getContext) {
-    canvas.width = w
-    canvas.height = h
+    canvas.width = width.value
+    canvas.height = height.value
     const ctx = canvas.getContext('2d');
+
+    const h = height.value
+    const w = width.value
 
     let increment = h / nbWaves
     currFlagColours.value.forEach((c, index) => {
@@ -86,7 +100,7 @@ function drawInCanvas() {
 
       ctx.beginPath();
       ctx.moveTo(0, pos);
-      ctx.bezierCurveTo(0 + (w / rand(2, 15)), pos - rand(20, 300), w - (w / rand(2, 15)), pos - rand(20, 300), w, pos)
+      ctx.bezierCurveTo(0 + (w / rand(2, 15)), pos - rand(20, h/2), w - (w / rand(2, 15)), pos - rand(20, h/2), w, pos)
       ctx.fill();
       ctx.fillRect(0, pos - 1, w, h - (h / pos) + 1);
       if (index === 0) {
@@ -128,7 +142,16 @@ onMounted(() => {
         <div v-for="c in currFlagColours" :style="{ background: c.hexCode }">{{ c.name }}</div>
       </div>
 
-      <br>
+      <h3>Parameters</h3>
+      <div class="size">
+        <input type="text" v-model="width">
+        <button @click="switchRes">↔️</button>
+        <input type="text" v-model="height">
+      </div>
+      <div class="size">
+        <button @click="width = 1080; height = 1920">Mobile</button>
+        <button @click="width = 1920; height = 1080">Desktop</button>
+      </div>
 
       <button @click="updateBackground()">Generate</button>
     </main>
@@ -158,6 +181,9 @@ canvas {
   border: 5px solid white;
   border-radius: 10px;
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.2);
+
+  max-width: 50vw;
+  max-height: 50vh;
 }
 
 section {
@@ -165,6 +191,7 @@ section {
   height: 100vh;
   background: rgb(220, 46, 133);
   background: v-bind('cssGradient');
+  
   filter: brightness(0.9);
   display: flex;
   align-items: center;
@@ -179,13 +206,28 @@ section {
 
   main {
     background: white;
-    padding: 1em;
+    padding: 2em;
     border-radius: 10px;
+
+    opacity: 0.5;
+    transition: opacity 0.6s ease;
+
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+
+    &:hover {
+      opacity: 1;
+    }
+
+    .size {
+      display: flex;
+      gap: 1em;
+    }
 
     input {
       padding: 1em;
-      border: 0;
-      opacity: 0.5;
+      border: 1px solid #eaeaea;
     }
 
     select {
@@ -196,16 +238,16 @@ section {
     }
 
     div.colours {
-      margin-top: 1em;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 0.3em;
+
       div {
         padding: 1em;
         text-align: center;
         border-radius: 3px;
         color: #eaeaea;
-        box-shadow: 0 0 2px rgba(0,0,0,0.1);
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
       }
     }
   }
