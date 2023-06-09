@@ -1,7 +1,7 @@
 <script setup>
 import axios from 'axios'
 import { RouterLink, RouterView, createWebHashHistory } from 'vue-router'
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, reactive } from 'vue';
 
 const searchQuery = ref('lesbian_2019')
 
@@ -69,6 +69,11 @@ function rand(min, max) { // min and max included
 const height = ref(851)
 const width = ref(393)
 
+let amplitude = reactive({ l: 2, r: 3 })
+let lift = reactive({ l: 0, r: 0 }) // 0 is default, h/2 is big lift
+let flatness = reactive({ l: 1, r: 1 }) // 1 is very WoW, w is very flat
+let wavesHeight = 0 // 0 is equal, -50 is unequal
+
 function switchRes() {
   let t = height.value
   height.value = width.value
@@ -94,11 +99,6 @@ function drawInCanvas() {
     const w = width.value
 
     let increment = h / nbWaves
-    let amplitude = { l: 2, r: 3 }
-    let lift = { l: 0, r: 0 } // 0 is default, h/2 is big lift
-    let flatness = { l: 1, r: 1 } // 1 is very WoW, w is very flat
-
-    let wavesHeight = 0 // 0 is equal, -50 is unequal
 
     currFlagColours.value.forEach((c, index) => {
       let pos = increment * (index) + rand(wavesHeight, 0)
@@ -171,6 +171,32 @@ onMounted(() => {
       <div class="size">
         <button @click="width = 1080; height = 1920">Mobile</button>
         <button @click="width = 1920; height = 1080">Desktop</button>
+      </div>
+
+      <div class="size">
+        <b>Lift</b>
+        <input type="text" v-model="lift.l">
+        <input type="text" v-model="lift.r">
+      </div>
+
+      <div class="size">
+        <b>Amplitude</b>
+        <p>height is tame, 2 is good</p>
+        <input type="text" v-model="amplitude.l">
+        <input type="text" v-model="amplitude.r">
+      </div>
+
+      <div class="size">
+        <b>Flatness</b>
+        <p>width is very flat, 1 is woW</p>
+        <input type="text" v-model="flatness.l">
+        <input type="text" v-model="flatness.r">
+      </div>
+
+      <div class="size">
+        <b>Height variation</b>
+        <p>0 is default, -50 is random</p>
+        <input type="text" v-model="wavesHeight">
       </div>
 
       <button @click="updateBackground()">Generate</button>
