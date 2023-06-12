@@ -72,7 +72,7 @@ const width = ref(393)
 let amplitude = reactive({ l: 2, r: 3 })
 let lift = reactive({ l: 0, r: 0 }) // 0 is default, h/2 is big lift
 let flatness = reactive({ l: 1, r: 1 }) // 1 is very WoW, w is very flat
-let wavesHeight = 0 // 0 is equal, -50 is unequal
+let wavesHeight = reactive(0) // 0 is equal, -50 is unequal
 
 function switchRes() {
   let t = height.value
@@ -175,28 +175,31 @@ onMounted(() => {
 
       <div class="size">
         <b>Lift</b>
-        <input type="text" v-model="lift.l">
-        <input type="text" v-model="lift.r">
+        <input type="range" v-model="lift.l">
+        <input type="range" v-model="lift.r">
       </div>
 
       <div class="size">
-        <b>Amplitude</b>
+        <b>Amplitude {{ amplitude }}</b>
         <p>height is tame, 2 is good</p>
-        <input type="text" v-model="amplitude.l">
-        <input type="text" v-model="amplitude.r">
+        <input type="range" min="2" :max="10" v-model="amplitude.l">
+        <input type="range" min="2" :max="10" v-model="amplitude.r">
       </div>
 
       <div class="size">
-        <b>Flatness</b>
+        <b>Flatness ({{ flatness }})</b>
         <p>width is very flat, 1 is woW</p>
-        <input type="text" v-model="flatness.l">
+        <div>
+          <input type="range" min="1" :max="width" v-model="flatness.l">
+          <input type="range" min="1" :max="width" v-model="flatness.r">
+        </div>
         <input type="text" v-model="flatness.r">
       </div>
 
       <div class="size">
-        <b>Height variation</b>
+        <b>Height variation ({{ wavesHeight }})</b>
         <p>0 is default, -50 is random</p>
-        <input type="text" v-model="wavesHeight">
+        <input type="range" min="0" :max="50" v-model="wavesHeight">
       </div>
 
       <button @click="updateBackground()">Generate</button>
