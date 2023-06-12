@@ -69,9 +69,9 @@ function rand(min, max) { // min and max included
 const height = ref(851)
 const width = ref(393)
 
-let amplitude = reactive({ l: 2, r: 3 })
+let amplitude = reactive({ l: height.value/10, r: height.value/10, rand: 0 })
 let lift = reactive({ l: 0, r: 0 }) // 0 is default, h/2 is big lift
-let flatness = reactive({ l: 1, r: 1 }) // 1 is very WoW, w is very flat
+let flatness = reactive({ l: width.value/2, r: width.value/2, rand: 0 }) // 1 is very WoW, w is very flat
 let wavesHeight = reactive(0) // 0 is equal, -50 is unequal
 
 function switchRes() {
@@ -101,23 +101,23 @@ function drawInCanvas() {
     let increment = h / nbWaves
 
     currFlagColours.value.forEach((c, index) => {
-      let pos = increment * (index) + rand(wavesHeight, 0)
+      let pos = increment * (index) - wavesHeight
       ctx.fillStyle = c.hexCode;
 
-      let from = { x: 0, y: pos-lift.l }
-      let to = { x: w, y: pos-lift.r }
+      let from = { x: 0, y: pos - lift.l }
+      let to = { x: w, y: pos - lift.r }
 
-      let inflPoint1 = { x: 0 + (w / flatness.l), y: pos - rand(0, h/amplitude.l)-lift.l }
-      let inflPoint2 = { x: w - (w / flatness.r), y: pos - rand(0, h/amplitude.r)-lift.r }
+      let inflPoint1 = { x: flatness.l, y: pos - amplitude.l - lift.l - rand(0, amplitude.rand)}
+      let inflPoint2 = { x: w - flatness.r - rand(-flatness.rand, flatness.rand)/2, y: pos - amplitude.r - lift.r - rand(0, amplitude.rand)}
 
       ctx.beginPath();
       ctx.moveTo(from.x, from.y);
-      ctx.bezierCurveTo(inflPoint1.x, inflPoint1.y, inflPoint2.x, inflPoint2.y , to.x, to.y)
+      ctx.bezierCurveTo(inflPoint1.x, inflPoint1.y, inflPoint2.x, inflPoint2.y, to.x, to.y)
       ctx.fill();
       /* fillPoly */
       ctx.beginPath();
-      ctx.moveTo(from.x, from.y-1);
-      ctx.lineTo(0 + w, to.y-1);
+      ctx.moveTo(from.x, from.y - 1);
+      ctx.lineTo(0 + w, to.y - 1);
       ctx.lineTo(w, h - (h / pos) + 1);
       ctx.lineTo(0, h - (h / pos) + 1);
       ctx.closePath();
@@ -126,6 +126,15 @@ function drawInCanvas() {
       if (index === 0) {
         ctx.fillRect(0, 0, w, h);
       }
+
+      /* DEBUG : see infl points
+      ctx.fillStyle = "#FF0000";
+      ctx.fillRect(inflPoint1.x,inflPoint1.y,10,10); // fill in the pixel at (10,10)
+      ctx.fillStyle = "#0000FF";
+
+      ctx.fillRect(inflPoint2.x,inflPoint2.y,10,10); // fill in the pixel at (10,10)
+      ctx.fillStyle = c.hexCode;
+      */
     })
 
   }
@@ -170,36 +179,35 @@ onMounted(() => {
       </div>
       <div class="size">
         <button @click="width = 1080; height = 1920">Mobile</button>
-        <button @click="width = 1920; height = 1080">Desktop</button>
+        <button @click=" width = 1920; height = 1080 ">Desktop</button>
       </div>
 
+      <b>Lift ({{ lift }})</b>
       <div class="size">
-        <b>Lift</b>
-        <input type="range" v-model="lift.l">
-        <input type="range" v-model="lift.r">
+        <input @input="updateBackground()" type="range" :max="height" :step=" height / 20 "
+          v-model=" lift.l ">
+        <input @input="updateBackground()" type="range" :max="height" :step=" height / 20 "
+          v-model=" lift.r ">
       </div>
 
+
+      <b>Vertical {{ amplitude }}</b>
       <div class="size">
-        <b>Amplitude {{ amplitude }}</b>
-        <p>height is tame, 2 is good</p>
-        <input type="range" min="2" :max="10" v-model="amplitude.l">
-        <input type="range" min="2" :max="10" v-model="amplitude.r">
+        <input @input="updateBackground()" type="range" :step="height/30" :max="height" v-model=" amplitude.l">
+        <input @input="updateBackground()" type="range" :step="height/30" :max="height" v-model=" amplitude.r">
+        <input @input="updateBackground()" type="range" :step="height/30" :max="height" v-model=" amplitude.rand">
       </div>
 
+      <b>Horizontal ({{ flatness }})</b>
       <div class="size">
-        <b>Flatness ({{ flatness }})</b>
-        <p>width is very flat, 1 is woW</p>
-        <div>
-          <input type="range" min="1" :max="width" v-model="flatness.l">
-          <input type="range" min="1" :max="width" v-model="flatness.r">
-        </div>
-        <input type="text" v-model="flatness.r">
+        <input @input="updateBackground()" type="range" :max="width" v-model="flatness.l">
+        <input @input="updateBackground()" type="range" :max="width" v-model="flatness.r">
+        <input @input="updateBackground()" type="range" :max="width" v-model="flatness.rand">
       </div>
 
+      <b>Height variation ({{ wavesHeight }})</b>
       <div class="size">
-        <b>Height variation ({{ wavesHeight }})</b>
-        <p>0 is default, -50 is random</p>
-        <input type="range" min="0" :max="50" v-model="wavesHeight">
+        <input @input="updateBackground()" type="range" :min="-height/2" :max="height/2" v-model="wavesHeight">
       </div>
 
       <button @click="updateBackground()">Generate</button>
@@ -240,7 +248,7 @@ section {
   height: 100vh;
   background: rgb(220, 46, 133);
   background: v-bind('cssGradient');
-  
+
   filter: brightness(0.9);
   display: flex;
   align-items: center;
@@ -257,6 +265,8 @@ section {
     background: white;
     padding: 2em;
     border-radius: 10px;
+    max-height: 80vh;
+    overflow: scroll;
 
     opacity: 0.5;
     transition: opacity 0.6s ease;
@@ -300,4 +310,5 @@ section {
       }
     }
   }
-}</style>
+}
+</style>
