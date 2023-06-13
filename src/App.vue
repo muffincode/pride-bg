@@ -65,6 +65,20 @@ function switchRes() {
   width.value = t
 }
 
+function shapes(name) {
+  switch (name) {
+    case "hills":
+        amplitude.l = 0
+        amplitude.r = 1
+        amplitude.rand = 666
+        drawInCanvas()
+      break;
+  
+    default:
+      break;
+  }
+}
+
 function drawInCanvas() {
   const canvas = document.getElementById('canvas');
 
@@ -165,6 +179,8 @@ onMounted(() => {
         <button class="button is-light is-info" @click=" width = 1920; height = 1080">Desktop</button>
       </div>
 
+      <h2 class="title is-6">Shapes</h2>
+      <button class="button  is-success" @click="() => shapes('hills')">Waves</button>
 
       <h2 class="title is-5" style="display: flex; align-items: center; gap: 10px;">
         Advanced parameters <button class="button is-small is-light" @click="showAdvanced = !showAdvanced">show</button>
