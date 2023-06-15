@@ -105,18 +105,46 @@ function shapes(basis, name) {
     }
     drawInCanvas()
   } else if (basis == "blobs") {
-    drawBlobs()
+    switch (name) {
+      case "big":
+        drawBigBlobs()
+        break;
+
+      default:
+        drawBlobs()
+        break;
+    }
+
   }
 }
-function drawBlobs() {
+
+function drawBlob(on, to, from, colour) {
+  on.fillStyle = colour;
+  let inflPoint1 = { x: from.x, y: from.y - 100 }
+  let inflPoint2 = { x: to.x, y: to.y - 100 }
+
+  on.beginPath();
+  on.lineWidth = 3;
+  on.strokeStyle = colour
+  on.moveTo(from.x, from.y);
+  on.lineTo(to.x, to.y)
+  on.stroke()
+
+  on.moveTo(from.x, from.y);
+  on.bezierCurveTo(inflPoint1.x, inflPoint1.y, inflPoint2.x, inflPoint2.y, to.x, to.y)
+  on.fill();
+  // -----------------------------------------
+  on.fillStyle = colour
+  inflPoint1 = { x: from.x, y: from.y + 100 }
+  inflPoint2 = { x: to.x, y: to.y + 100 }
+  on.beginPath();
+  on.moveTo(from.x, from.y);
+  on.bezierCurveTo(inflPoint1.x, inflPoint1.y, inflPoint2.x, inflPoint2.y, to.x, to.y)
+  on.fill();
+}
+
+function drawBigBlobs() {
   const canvas = document.getElementById('canvas');
-
-  amplitude.l = Math.round(amplitude.l)
-  amplitude.r = Math.round(amplitude.r)
-  amplitude.rand = Math.round(amplitude.rand)
-
-  const margin = 100
-  const nbWaves = currFlagColours.value.length
 
   if (canvas.getContext) {
     canvas.width = width.value
@@ -126,51 +154,41 @@ function drawBlobs() {
     const h = height.value
     const w = width.value
 
-    //currFlagColours.value.forEach((c, index) => {
-      ctx.fillStyle = currFlagColours.value[0].hexCode;
-      ctx.fillRect(0, 0, w, h);
-      for (let i = 0; i < 60; i++) {
-        let index = rand(1, currFlagColours.value.length-1)
-        ctx.fillStyle = currFlagColours.value[index].hexCode;
-
-        /*if (index === 0) {
-          ctx.fillRect(0, 0, w, h);
-        }*/
-
-        let from = { x: rand(0, w), y: rand(0, h) }
-        let to = { x: from.x + rand(w/20, w/10), y: from.y + rand(-h/10, h/10) }
-
-        let inflPoint1 = { x: from.x, y: from.y - 100 }
-        let inflPoint2 = { x: to.x, y: to.y - 100 }
-
-        ctx.beginPath();
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = currFlagColours.value[index].hexCode
-        ctx.moveTo(from.x, from.y);
-        ctx.lineTo(to.x, to.y)
-        ctx.stroke()
-
-        ctx.moveTo(from.x, from.y);
-        ctx.bezierCurveTo(inflPoint1.x, inflPoint1.y, inflPoint2.x, inflPoint2.y, to.x, to.y)
-        ctx.fill();
-
-        // ctx.fillStyle = "#FF0000";
-        // ctx.fillRect(inflPoint1.x,inflPoint1.y,10,10); // fill in the pixel at (10,10)
-        // ctx.fillStyle = "#0000FF";
-
-        // ctx.fillRect(inflPoint2.x,inflPoint2.y,10,10); // fill in the pixel at (10,10)
-        // ctx.fillStyle = c.hexCode;
-        // -----------------------------------------
-        ctx.fillStyle = currFlagColours.value[index].hexCode
-        inflPoint1 = { x: from.x, y: from.y + 100 }
-        inflPoint2 = { x: to.x, y: to.y + 100 }
-        ctx.beginPath();
-        ctx.moveTo(from.x, from.y);
-        ctx.bezierCurveTo(inflPoint1.x, inflPoint1.y, inflPoint2.x, inflPoint2.y, to.x, to.y)
-        ctx.fill();
+    currFlagColours.value.forEach((c, index) => {
+      if (index === 0) {
+        ctx.fillRect(0, 0, w, h);
       }
 
-    //})
+      let from = { x: rand(0, w), y: rand(0, h) }
+      let to = { x: rand(0, w), y: rand(0, h) }
+
+      drawBlob(ctx, to, from, c.hexCode)
+    })
+  }
+}
+
+function drawBlobs() {
+  const canvas = document.getElementById('canvas');
+
+  if (canvas.getContext) {
+    canvas.width = width.value
+    canvas.height = height.value
+    const ctx = canvas.getContext('2d');
+
+    const h = height.value
+    const w = width.value
+
+    ctx.fillStyle = currFlagColours.value[0].hexCode;
+    ctx.fillRect(0, 0, w, h);
+
+    for (let i = 0; i < 60; i++) {
+      let index = rand(1, currFlagColours.value.length - 1)
+
+      let from = { x: rand(0, w), y: rand(0, h) }
+      let to = { x: from.x + rand(w / 20, w / 10), y: from.y + rand(-h / 10, h / 10) }
+
+      drawBlob(ctx, to, from, currFlagColours.value[index].hexCode)
+    }
   }
 }
 
@@ -280,7 +298,8 @@ onMounted(() => {
         <button class="button is-info" @click="() => shapes('stripes', 'hills')">Hills ⛰️</button>
         <button class="button is-info" @click="() => shapes('stripes', 'flames')">Flames 🔥</button>
         <button class="button is-info" @click="() => shapes('stripes', 'stripes')">Stripes 🏳️‍🌈</button>
-        <button class="button is-info" @click="() => shapes('blobs')">Blobs ☁️</button>
+        <button class="button is-info" @click="() => shapes('blobs', 'big')">Big blobs ☁️</button>
+        <button class="button is-info" @click="() => shapes('blobs')">Small blobs ☁️</button>
       </div>
 
       <h2 class="title is-5" style="display: flex; align-items: center; gap: 10px;">
