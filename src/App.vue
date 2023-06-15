@@ -56,8 +56,8 @@ function rand(min, max) { // min and max included
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
-const height = ref(851)
-const width = ref(393)
+const height = ref(window.screen.height)
+const width = ref(window.screen.width)
 
 let amplitude = reactive({ l: height.value / 10, r: height.value / 10, rand: 0 })
 let lift = reactive({ l: 0, r: 0 }) // 0 is default, h/2 is big lift
@@ -70,39 +70,103 @@ function switchRes() {
   width.value = t
 }
 
-function shapes(name) {
+function shapes(basis, name) {
   lift.l = 0
   lift.r = 0
-  switch (name) {
-    case "hills":
-      amplitude.l = height.value/10
-      amplitude.r = height.value/10
-      amplitude.rand = height.value/20
-      flatness.l = width.value / 5
-      flatness.r = width.value / 5
-      flatness.rand = width.value/20
-      wavesHeight.rand = -50
-      break;
-    case "flames":
-      amplitude.l = height.value/4
-      amplitude.r = height.value/4
-      amplitude.rand = height.value/4
-      flatness.l = width.value - width.value*0.1
-      flatness.r = width.value - width.value*0.1
-      flatness.rand = width.value/2
-      wavesHeight.h = -150
-      break;
-    case "stripes":
-      amplitude.l = 0
-      amplitude.r = 0
-      amplitude.rand = 0
-      wavesHeight.h = 0
-      wavesHeight.rand = 0
-      break;
-    default:
-      break;
+  if (basis == "stripes") {
+    switch (name) {
+      case "hills":
+        amplitude.l = height.value / 10
+        amplitude.r = height.value / 10
+        amplitude.rand = height.value / 20
+        flatness.l = width.value / 5
+        flatness.r = width.value / 5
+        flatness.rand = width.value / 20
+        wavesHeight.rand = -50
+        break;
+      case "flames":
+        amplitude.l = height.value / 4
+        amplitude.r = height.value / 4
+        amplitude.rand = height.value / 4
+        flatness.l = width.value - width.value * 0.1
+        flatness.r = width.value - width.value * 0.1
+        flatness.rand = width.value / 2
+        wavesHeight.h = -150
+        break;
+      case "stripes":
+        amplitude.l = 0
+        amplitude.r = 0
+        amplitude.rand = 0
+        wavesHeight.h = 0
+        wavesHeight.rand = 0
+        break;
+      default:
+        break;
+    }
+    drawInCanvas()
+  } else if (basis == "blobs") {
+    drawBlobs()
   }
-  drawInCanvas()
+}
+function drawBlobs() {
+  const canvas = document.getElementById('canvas');
+
+  amplitude.l = Math.round(amplitude.l)
+  amplitude.r = Math.round(amplitude.r)
+  amplitude.rand = Math.round(amplitude.rand)
+
+  const margin = 100
+  const nbWaves = currFlagColours.value.length
+
+  if (canvas.getContext) {
+    canvas.width = width.value
+    canvas.height = height.value
+    const ctx = canvas.getContext('2d');
+
+    const h = height.value
+    const w = width.value
+
+    currFlagColours.value.forEach((c, index) => {
+      ctx.fillStyle = c.hexCode;
+
+      if (index === 0) {
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      let from = { x: rand(0, w), y: rand(0, h) }
+      let to = { x: rand(0, w), y: rand(0, h) }
+
+
+      let inflPoint1 = { x: from.x, y: from.y - 500 }
+      let inflPoint2 = { x: to.x, y: to.y - 500 }
+
+      ctx.beginPath();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = c.hexCode;
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(to.x, to.y)
+      ctx.stroke()
+
+      ctx.moveTo(from.x, from.y);
+      ctx.bezierCurveTo(inflPoint1.x, inflPoint1.y, inflPoint2.x, inflPoint2.y, to.x, to.y)
+      ctx.fill();
+
+      // ctx.fillStyle = "#FF0000";
+      // ctx.fillRect(inflPoint1.x,inflPoint1.y,10,10); // fill in the pixel at (10,10)
+      // ctx.fillStyle = "#0000FF";
+
+      // ctx.fillRect(inflPoint2.x,inflPoint2.y,10,10); // fill in the pixel at (10,10)
+      // ctx.fillStyle = c.hexCode;
+      // -----------------------------------------
+      ctx.fillStyle = c.hexCode;
+      inflPoint1 = { x: from.x, y: from.y + 500 }
+      inflPoint2 = { x: to.x, y: to.y + 500 }
+      ctx.beginPath();
+      ctx.moveTo(from.x, from.y);
+      ctx.bezierCurveTo(inflPoint1.x, inflPoint1.y, inflPoint2.x, inflPoint2.y, to.x, to.y)
+      ctx.fill();
+    })
+  }
 }
 
 function drawInCanvas() {
@@ -111,10 +175,6 @@ function drawInCanvas() {
   amplitude.l = Math.round(amplitude.l)
   amplitude.r = Math.round(amplitude.r)
   amplitude.rand = Math.round(amplitude.rand)
-
-  // if (width.value > window.innerWidth) {
-  //   canvas.style.transform = "scale(0.5)"
-  // }
 
   const margin = 100
   const nbWaves = currFlagColours.value.length
@@ -135,10 +195,10 @@ function drawInCanvas() {
       let from = { x: 0, y: pos - lift.l }
       let to = { x: w, y: pos - lift.r }
 
-      let grd=ctx.createLinearGradient(from.x + w/2, from.y - pos, to.x - w/2, to.y + pos + h/2);
+      let grd = ctx.createLinearGradient(from.x + w / 2, from.y - pos, to.x - w / 2, to.y + pos + h / 2);
 
       grd.addColorStop(0, c.hexCode);
-      grd.addColorStop(1, `rgb(${c.r-30},${c.g-30},${c.b-30})`);
+      grd.addColorStop(1, `rgb(${c.r - 30},${c.g - 30},${c.b - 30})`);
 
       ctx.fillStyle = grd;
       //ctx.fillStyle = c.hexCode;
@@ -172,7 +232,6 @@ function drawInCanvas() {
       ctx.fillStyle = c.hexCode;
       */
     })
-
   }
   /*
   let image = canvas.toDataURL("image/png");
@@ -182,7 +241,6 @@ function drawInCanvas() {
 
 onMounted(() => {
   fetch()
-
 })
 </script>
 
@@ -214,9 +272,10 @@ onMounted(() => {
 
       <h2 class="title is-6">Shapes</h2>
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px">
-        <button class="button  is-info" @click="() => shapes('hills')">Hills ⛰️</button>
-        <button class="button  is-info" @click="() => shapes('flames')">Flames 🔥</button>
-        <button class="button  is-info" @click="() => shapes('stripes')">Stripes 🏳️‍🌈</button>
+        <button class="button is-info" @click="() => shapes('stripes', 'hills')">Hills ⛰️</button>
+        <button class="button is-info" @click="() => shapes('stripes', 'flames')">Flames 🔥</button>
+        <button class="button is-info" @click="() => shapes('stripes', 'stripes')">Stripes 🏳️‍🌈</button>
+        <button class="button is-info" @click="() => shapes('blobs')">Blobs ☁️</button>
       </div>
 
       <h2 class="title is-5" style="display: flex; align-items: center; gap: 10px;">
@@ -357,6 +416,7 @@ section {
   padding: 2em 1em;
   border-radius: 20px;
   transition: background 0.5s ease;
+
   div.controls {
     width: 80%;
     margin: auto;
@@ -429,6 +489,7 @@ section#settings {
 
     &:hover {
       opacity: 1;
+
       section {
         background: #222021;
         color: white;
