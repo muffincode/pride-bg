@@ -52,6 +52,12 @@ function updateBackground() {
   cssGradient.value = generateLinearGradient(currFlagColours.value)
 }
 
+function downloadImage() {
+  const canvas = document.getElementById('canvas');
+  let image = canvas.toDataURL("image/png");
+  document.write('<img src="' + image + '"/>');
+}
+
 function rand(min, max) { // min and max included 
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
@@ -256,10 +262,6 @@ function drawInCanvas() {
       */
     })
   }
-  /*
-  let image = canvas.toDataURL("image/png");
-  document.write('<img src="'+image+'"/>');
-  */
 }
 
 onMounted(() => {
@@ -294,7 +296,7 @@ onMounted(() => {
       </div>
 
       <h2 class="title is-6">Shapes</h2>
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px">
+      <div id="shapes">
         <button class="button is-info" @click="() => shapes('stripes', 'hills')">Hills ⛰️</button>
         <button class="button is-info" @click="() => shapes('stripes', 'flames')">Flames 🔥</button>
         <button class="button is-info" @click="() => shapes('stripes', 'stripes')">Stripes 🏳️‍🌈</button>
@@ -305,7 +307,7 @@ onMounted(() => {
       <h2 class="title is-5" style="display: flex; align-items: center; gap: 10px;">
         Advanced parameters <button class="button is-small is-light" @click="showAdvanced = !showAdvanced">show</button>
       </h2>
-      <section v-if="showAdvanced">
+      <section id="advanced" v-if="showAdvanced">
 
         <div class="controls">
           <p>Vertical shift</p>
@@ -395,6 +397,8 @@ onMounted(() => {
 
 
       <button class="button is-large is-success" @click="drawInCanvas()">Generate</button>
+      <button class="button is-large is-info" @click="downloadImage()">Download</button>
+
     </main>
 
   </section>
@@ -435,7 +439,7 @@ canvas {
   max-height: 90vh;
 }
 
-section {
+section#advanced {
   background: white;
   padding: 2em 1em;
   border-radius: 20px;
@@ -500,6 +504,7 @@ section#settings {
   main {
     background: white;
     padding: 2em;
+    box-sizing: border-box;
     border-radius: 10px;
     max-height: 80vh;
     overflow: scroll;
@@ -519,6 +524,12 @@ section#settings {
         color: white;
 
       }
+    }
+
+    div#shapes {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px
     }
 
     .size {
@@ -552,4 +563,35 @@ section#settings {
     }
   }
 }
-</style>
+
+
+@media screen and (max-width: 520px) {
+  canvas {
+    max-width: 80vh;
+    margin-top: 1em;
+  }
+
+  #app>section {
+    flex-direction: column;
+    width: auto;
+    height: auto;
+
+    main {
+      overflow: visible;
+      opacity: 1;
+      width: 96vw;
+      max-height: fit-content;
+      border-radius: 10px 10px 0 0;
+
+      div.size {
+        flex-direction: column;
+      }
+
+      div#shapes {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px
+      }
+    }
+  }
+}</style>
